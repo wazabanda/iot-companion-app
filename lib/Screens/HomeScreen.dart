@@ -1,8 +1,10 @@
 import 'package:csc_4130_iot_application/Handlers/NinjaApiService.dart';
 import 'package:csc_4130_iot_application/Handlers/share_preferences/shared_preferences_constants.dart';
 import 'package:csc_4130_iot_application/Handlers/share_preferences/shared_preferences_utils.dart';
+import 'package:csc_4130_iot_application/Providers/GlobalProvider.dart';
 import 'package:csc_4130_iot_application/Screens/ChartPage.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -10,42 +12,45 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<Map<String, dynamic>> _cardData = [
 
-  ];
 
   @override
   void initState() {
     super.initState();
-    loadDevices();
+    // loadDevices();
+    // Globalprovider
+    Provider.of<AppInfo>(context, listen: false).loadDevices();
   }
 
   // Asynchronous method to load saved settings
-    Future<void> loadDevices() async {
-
-      String? serverAddress = await SharedPrefrencesUtils().getString(keyServerAddress);
-      NinjaApiService.setBase(serverAddress!);
-      final devices = await NinjaApiService.listDevices();
-      for (var device in devices) {
-        _cardData.add({
-          'id': device['device_name'],
-          'image': 'assets/images/image1.jpg', // Placeholder image
-          'title': device['device_name'], // Using device_name as the title
-          'device_id': device['device_id'], // Adding the device_id as well
-        });
-      }
-      setState(() {
-
-      });
-    }
+  //   Future<void> loadDevices() async {
+  //
+  //     String? serverAddress = await SharedPrefrencesUtils().getString(keyServerAddress);
+  //     NinjaApiService.setBase(serverAddress!);
+  //     final devices = await NinjaApiService.listDevices();
+  //     for (var device in devices) {
+  //       _cardData.add({
+  //         'id': device['device_name'],
+  //         'image': 'assets/images/image1.jpg', // Placeholder image
+  //         'title': device['device_name'], // Using device_name as the title
+  //         'device_id': device['device_id'], // Adding the device_id as well
+  //       });
+  //     }
+  //     setState(() {
+  //
+  //     });
+  //   }
 
   @override
   Widget build(BuildContext context) {
+    final deviceProvider = Provider.of<AppInfo>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Your Devices'),
       ),
-      body: GridView.builder(
+      body: deviceProvider.devices.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : GridView.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           childAspectRatio: 0.8,
@@ -53,16 +58,17 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisSpacing: 16,
         ),
         padding: EdgeInsets.all(16),
-        itemCount: _cardData.length,
+        itemCount: deviceProvider.devices.length,
         itemBuilder: (context, index) {
-          final cardData = _cardData[index];
+          final cardData = deviceProvider.devices[index];
           return GestureDetector(
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => NumericalChartPage(
-                    id: cardData['id'],
+                    id: cardData['device_id'],
+                    name: cardData['id'],
                   ),
                 ),
               );

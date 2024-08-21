@@ -1,12 +1,21 @@
 import 'package:csc_4130_iot_application/Constants/BrandColors.dart';
+import 'package:csc_4130_iot_application/Providers/GlobalProvider.dart';
 import 'package:csc_4130_iot_application/Screens/ChartPage.dart';
 import 'package:csc_4130_iot_application/Screens/HomeScreen.dart';
 import 'package:csc_4130_iot_application/Screens/SettingsScreen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:csc_4130_iot_application/Screens/ChartPage.dart';
+
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => AppInfo(),
+      child: MyApp(),
+    ),
+  );
 }
+
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});

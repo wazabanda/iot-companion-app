@@ -1,56 +1,70 @@
-import 'package:csc_4130_iot_application/DataClasses/NumericalLogData.dart';
+import 'dart:async';
+import 'package:csc_4130_iot_application/Handlers/NinjaApiService.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:csc_4130_iot_application/DataClasses/NumericalLogData.dart';
 
 class NumericalChartPage extends StatefulWidget {
-  final String id; // Add this line to accept a string id
+  final String id;
+  final String name;
 
-  const NumericalChartPage({Key? key, required this.id}) : super(key: key); // Update constructor
+  const NumericalChartPage({Key? key, required this.id, required this.name}) : super(key: key);
 
   @override
   _NumericalChartPageState createState() => _NumericalChartPageState();
 }
 
 class _NumericalChartPageState extends State<NumericalChartPage> {
-  // Sample data in the format you provided
-  Map<String, List<NumericalLogData>> data = {
-    'Temperature': [
-      NumericalLogData('2023-01-01', 35),
-      NumericalLogData('2023-01-02', 28),
-      NumericalLogData('2023-01-03', 34),
-      NumericalLogData('2023-01-04', 32),
-      NumericalLogData('2023-01-05', 40),
-    ],
-    'Heading 2': [
-      NumericalLogData('2023-01-01', 20),
-      NumericalLogData('2023-01-02', 15),
-      NumericalLogData('2023-01-03', 25),
-      NumericalLogData('2023-01-04', 22),
-      NumericalLogData('2023-01-05', 18),
-    ],
-    'Heading 3': [
-      NumericalLogData('2023-01-01', 20),
-      NumericalLogData('2023-01-02', 15),
-      NumericalLogData('2023-01-03', 25),
-      NumericalLogData('2023-01-04', 22),
-      NumericalLogData('2023-01-05', 18),
-    ],
-  };
+  Map<String, List<NumericalLogData>> data = {};
+  late Timer _timer;
 
-  void updateChartData(String heading, String timeStamp, double newValue) {
-    setState(() {
-      data[heading]!.add(NumericalLogData(timeStamp, newValue));
+  @override
+  void initState() {
+    super.initState();
+    fetchAndAppendLogs();  // Initial fetch
+    _timer = Timer.periodic(Duration(seconds: 30), (timer) {
+      fetchAndAppendLogs();
     });
   }
 
   @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  Future<void> fetchAndAppendLogs() async {
+    try {
+      final logs = await NinjaApiService.getNumericalLogs(widget.id);
+
+      setState(() {
+        for (var log in logs) {
+          final String label = log['data_label'];
+          final String timeStamp = log['date_time'];
+          final double value = log['value'];
+
+          if (!data.containsKey(label)) {
+            data[label] = [];
+          }
+
+          // Check if this timestamp already exists in the list
+          if (data[label]!.every((entry) => entry.time != timeStamp)) {
+            data[label]!.add(NumericalLogData(timeStamp, value));
+          }
+        }
+      });
+    } catch (e) {
+      print('Failed to fetch logs: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Use widget.id to filter data or other logic as needed
-    String pageId = widget.id; // Access the passed id
+    String deviceName = widget.name;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Syncfusion Flutter chart - $pageId'), // Display the id in the title or use it as needed
+        title: Text('$deviceName'),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -58,7 +72,7 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
           children: data.entries.map((entry) {
             final heading = entry.key;
             final chartData = entry.value;
-            final latestValue = chartData.last.sales;
+            final latestValue = chartData.isNotEmpty ? chartData.last.sales : 'No Data';
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,8 +97,8 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
                     series: <CartesianSeries<NumericalLogData, String>>[
                       LineSeries<NumericalLogData, String>(
                         dataSource: chartData,
-                        xValueMapper: (NumericalLogData sales, _) => sales.time,
-                        yValueMapper: (NumericalLogData sales, _) => sales.sales,
+                        xValueMapper: (NumericalLogData logData, _) => logData.time,
+                        yValueMapper: (NumericalLogData logData, _) => logData.sales,
                         name: heading,
                         dataLabelSettings: const DataLabelSettings(isVisible: true),
                       ),
