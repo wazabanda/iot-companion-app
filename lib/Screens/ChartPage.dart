@@ -1,15 +1,17 @@
+import 'package:csc_4130_iot_application/DataClasses/NumericalLogData.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:syncfusion_flutter_charts/sparkcharts.dart';
 
-class ChartPage extends StatefulWidget {
-  const ChartPage({Key? key}) : super(key: key);
+class NumericalChartPage extends StatefulWidget {
+  final String id; // Add this line to accept a string id
+
+  const NumericalChartPage({Key? key, required this.id}) : super(key: key); // Update constructor
 
   @override
-  _ChartPageState createState() => _ChartPageState();
+  _NumericalChartPageState createState() => _NumericalChartPageState();
 }
 
-class _ChartPageState extends State<ChartPage> {
+class _NumericalChartPageState extends State<NumericalChartPage> {
   // Sample data in the format you provided
   Map<String, List<NumericalLogData>> data = {
     'Temperature': [
@@ -35,11 +37,20 @@ class _ChartPageState extends State<ChartPage> {
     ],
   };
 
+  void updateChartData(String heading, String timeStamp, double newValue) {
+    setState(() {
+      data[heading]!.add(NumericalLogData(timeStamp, newValue));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Use widget.id to filter data or other logic as needed
+    String pageId = widget.id; // Access the passed id
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Syncfusion Flutter chart'),
+        title: Text('Syncfusion Flutter chart - $pageId'), // Display the id in the title or use it as needed
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -52,7 +63,6 @@ class _ChartPageState extends State<ChartPage> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                   child: Text(
@@ -76,7 +86,7 @@ class _ChartPageState extends State<ChartPage> {
                         xValueMapper: (NumericalLogData sales, _) => sales.time,
                         yValueMapper: (NumericalLogData sales, _) => sales.sales,
                         name: heading,
-                        dataLabelSettings: DataLabelSettings(isVisible: true),
+                        dataLabelSettings: const DataLabelSettings(isVisible: true),
                       ),
                     ],
                   ),
@@ -90,4 +100,3 @@ class _ChartPageState extends State<ChartPage> {
     );
   }
 }
-
