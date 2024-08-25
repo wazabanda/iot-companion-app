@@ -5,6 +5,7 @@ import 'package:csc_4130_iot_application/Providers/GlobalProvider.dart';
 import 'package:csc_4130_iot_application/Screens/ChartPage.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:csc_4130_iot_application/Constants/BrandColors.dart'; // Import BrandColors
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -13,40 +14,24 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
 
-
   @override
   void initState() {
     super.initState();
-    // loadDevices();
-    // Globalprovider
     Provider.of<AppInfo>(context, listen: false).loadDevices();
   }
-
-  // Asynchronous method to load saved settings
-  //   Future<void> loadDevices() async {
-  //
-  //     String? serverAddress = await SharedPrefrencesUtils().getString(keyServerAddress);
-  //     NinjaApiService.setBase(serverAddress!);
-  //     final devices = await NinjaApiService.listDevices();
-  //     for (var device in devices) {
-  //       _cardData.add({
-  //         'id': device['device_name'],
-  //         'image': 'assets/images/image1.jpg', // Placeholder image
-  //         'title': device['device_name'], // Using device_name as the title
-  //         'device_id': device['device_id'], // Adding the device_id as well
-  //       });
-  //     }
-  //     setState(() {
-  //
-  //     });
-  //   }
 
   @override
   Widget build(BuildContext context) {
     final deviceProvider = Provider.of<AppInfo>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Your Devices'),
+        title: Text(
+          'Your Devices',
+          style: TextStyle(
+            color: BrandColors.white,  // Use brand color for text
+          ),
+        ),
+        backgroundColor: BrandColors.oxfordBlue, // Set app bar color
       ),
       body: deviceProvider.devices.isEmpty
           ? Center(child: CircularProgressIndicator())
@@ -76,15 +61,16 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12), // Use a consistent border radius
               ),
+              color: BrandColors.carrotOrange,  // Set card background color
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
                     child: ClipRRect(
                       borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(8),
+                        top: Radius.circular(12), // Match card border radius
                       ),
                       child: Image.asset(
                         cardData['image'],
@@ -97,6 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text(
                       cardData['title'],
                       style: TextStyle(
+                        color: BrandColors.white,  // Use brand color for text
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
@@ -111,4 +98,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-

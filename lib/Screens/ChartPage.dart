@@ -3,6 +3,7 @@ import 'package:csc_4130_iot_application/Handlers/NinjaApiService.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:csc_4130_iot_application/DataClasses/NumericalLogData.dart';
+import 'package:csc_4130_iot_application/Constants/BrandColors.dart'; // Import BrandColors
 
 class NumericalChartPage extends StatefulWidget {
   final String id;
@@ -17,20 +18,25 @@ class NumericalChartPage extends StatefulWidget {
 class _NumericalChartPageState extends State<NumericalChartPage> {
   Map<String, List<NumericalLogData>> data = {};
   late Timer _timer;
+  int _selectedInterval = 30; // Default fetch interval in seconds
 
   @override
   void initState() {
     super.initState();
     fetchAndAppendLogs();  // Initial fetch
-    _timer = Timer.periodic(Duration(seconds: 30), (timer) {
-      fetchAndAppendLogs();
-    });
+    _startTimer(_selectedInterval);
   }
 
   @override
   void dispose() {
     _timer.cancel();
     super.dispose();
+  }
+
+  void _startTimer(int interval) {
+    _timer = Timer.periodic(Duration(seconds: interval), (timer) {
+      fetchAndAppendLogs();
+    });
   }
 
   Future<void> fetchAndAppendLogs() async {
@@ -47,7 +53,6 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
             data[label] = [];
           }
 
-          // Check if this timestamp already exists in the list
           if (data[label]!.every((entry) => entry.time != timeStamp)) {
             data[label]!.add(NumericalLogData(timeStamp, value));
           }
@@ -64,51 +69,111 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('$deviceName'),
+        title: Text(
+          deviceName,
+          style: TextStyle(
+            color: BrandColors.white, // AppBar text color
+          ),
+        ),
+        backgroundColor: BrandColors.oxfordBlue, // AppBar background color
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: data.entries.map((entry) {
-            final heading = entry.key;
-            final chartData = entry.value;
-            final latestValue = chartData.isNotEmpty ? chartData.last.sales : 'No Data';
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                  child: Text(
-                    heading,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+              child: Row(
+                children: [
+                  Text(
+                    "Update Interval: ",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: BrandColors.white, // Label color
                     ),
                   ),
-                ),
-                SizedBox(
-                  height: 300,
-                  child: SfCartesianChart(
-                    primaryXAxis: CategoryAxis(),
-                    title: ChartTitle(text: 'Latest value: $latestValue'),
-                    legend: Legend(isVisible: true),
-                    tooltipBehavior: TooltipBehavior(enable: true),
-                    series: <CartesianSeries<NumericalLogData, String>>[
-                      LineSeries<NumericalLogData, String>(
-                        dataSource: chartData,
-                        xValueMapper: (NumericalLogData logData, _) => logData.time,
-                        yValueMapper: (NumericalLogData logData, _) => logData.sales,
-                        name: heading,
-                        dataLabelSettings: const DataLabelSettings(isVisible: true),
-                      ),
-                    ],
+                  SizedBox(width: 16),
+                  DropdownButton<int>(
+                    value: _selectedInterval,
+                    items: [5, 10, 30, 60, 120, 300].map((int value) {
+                      return DropdownMenuItem<int>(
+                        value: value,
+                        child: Text(
+                          '$value seconds',
+                          style: TextStyle(color: BrandColors.white), // Dropdown text color
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (int? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _selectedInterval = newValue;
+                          _startTimer(_selectedInterval); // Restart the timer with the new interval
+                        });
+                      }
+                    },
                   ),
-                ),
-                const SizedBox(height: 16),
-              ],
-            );
-          }).toList(),
+                ],
+              ),
+            ),
+            ...data.entries.map((entry) {
+              final heading = entry.key;
+              final chartData = entry.value;
+              final latestValue = chartData.isNotEmpty ? chartData.last.sales : 'No Data';
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                    child: Text(
+                      heading,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: BrandColors.white, // Heading color
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 300,
+                    child: SfCartesianChart(
+                      primaryXAxis: CategoryAxis(
+                        labelStyle: TextStyle(color: BrandColors.white), // X-axis labels color
+                      ),
+                      primaryYAxis: NumericAxis(
+                        labelStyle: TextStyle(color: BrandColors.white), // Y-axis labels color
+                      ),
+                      title: ChartTitle(
+                        text: 'Latest value: $latestValue',
+                        textStyle: TextStyle(color: BrandColors.white), // Chart title color
+                      ),
+                      legend: Legend(
+                        isVisible: true,
+                        textStyle: TextStyle(color: BrandColors.white), // Legend text color
+                      ),
+                      tooltipBehavior: TooltipBehavior(enable: true),
+                      series: <CartesianSeries<NumericalLogData, String>>[
+                        LineSeries<NumericalLogData, String>(
+                          dataSource: chartData,
+                          xValueMapper: (NumericalLogData logData, _) => logData.time,
+                          yValueMapper: (NumericalLogData logData, _) => logData.sales,
+                          name: heading,
+                          color: BrandColors.carrotOrange, // Line color
+                          dataLabelSettings: DataLabelSettings(
+                            isVisible: true,
+                            textStyle: TextStyle(color: BrandColors.white), // Data label color
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              );
+            }).toList(),
+          ],
         ),
       ),
     );
