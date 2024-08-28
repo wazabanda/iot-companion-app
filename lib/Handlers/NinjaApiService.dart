@@ -152,6 +152,14 @@ class NinjaApiService {
     if (authToken == null || tokenExpiry == null || DateTime.now().isAfter(tokenExpiry!)) {
       String? username = await SharedPrefrencesUtils().getString(keyUsername);
       String? password = await SharedPrefrencesUtils().getString(keyPassword);
+      if(username == null)
+        {
+          username="waza";
+        }
+      if(password == null)
+        {
+          password = "7test@123";
+        }
       await login(username!, password!);
       print(authToken);
     }
