@@ -36,19 +36,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // Asynchronous method to load saved settings
   Future<void> _loadSettings() async {
+
+
     String? serverAddress = await SharedPrefrencesUtils().getString(keyServerAddress);
     String? username = await SharedPrefrencesUtils().getString(keyUsername);
     String? password = await SharedPrefrencesUtils().getString(keyPassword);
-
+    bool foundNull = false;
     if (serverAddress != null) {
       _serverIpController.text = serverAddress;
+    }else{
+      serverAddress = "https://iotcloudserver-production.up.railway.app";
+      _serverIpController.text = serverAddress;
+      foundNull = true;
     }
     if (username != null) {
       _usernameController.text = username;
+    }else{
+      username="waza";
+      _usernameController.text=username;
+      foundNull = true;
     }
     if (password != null) {
       _passwordController.text = password;
+
+    }else{
+      password="7test@123";
+      _passwordController.text=password;
+      foundNull = true;
     }
+
+    if(foundNull)
+      {
+        _submitForm();
+      }
   }
 
   // Function to handle form submission

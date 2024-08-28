@@ -4,7 +4,7 @@ import 'package:csc_4130_iot_application/Handlers/share_preferences/shared_prefe
 import 'package:http/http.dart' as http;
 
 class NinjaApiService {
-  static String baseUrl = 'https://your-api-url.com';
+  static String baseUrl = 'https://iotcloudserver-production.up.railway.app';
   static String? authToken;
   static DateTime? tokenExpiry;
 
@@ -37,6 +37,7 @@ class NinjaApiService {
       setAuthToken(token, expires);
       return response;
     } else {
+      print(response.body);
       throw Exception('Failed to login');
     }
   }

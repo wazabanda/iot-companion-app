@@ -14,6 +14,10 @@ class AppInfo with ChangeNotifier {
     }
 
     String? serverAddress = await SharedPrefrencesUtils().getString(keyServerAddress);
+    if(serverAddress == null)
+    {
+      serverAddress = "https://iotcloudserver-production.up.railway.app/";
+    }
     NinjaApiService.setBase(serverAddress!);
 
     final fetchedDevices = await NinjaApiService.listDevices();
