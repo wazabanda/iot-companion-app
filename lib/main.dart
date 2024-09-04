@@ -20,7 +20,7 @@ class MyApp extends StatefulWidget {
   @override
   State<MyApp> createState() => _MyAppState();
 }
-
+// Entry Point for applicatoin, this wraps the home screen and Settings
 class _MyAppState extends State<MyApp> {
   int _currentIndex = 0;
   final List<Widget> _bodies = [

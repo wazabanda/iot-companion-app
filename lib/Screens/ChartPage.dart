@@ -5,6 +5,8 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:csc_4130_iot_application/DataClasses/NumericalLogData.dart';
 import 'package:csc_4130_iot_application/Constants/BrandColors.dart'; // Import BrandColors
 
+
+// page will handle displaying reading that are fetched from the server
 class NumericalChartPage extends StatefulWidget {
   final String id;
   final String name;

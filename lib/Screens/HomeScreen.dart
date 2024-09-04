@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:csc_4130_iot_application/Constants/BrandColors.dart'; // Import BrandColors
 
+// this screen will display all devices registered for the logged in user on the web app. 
+
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();

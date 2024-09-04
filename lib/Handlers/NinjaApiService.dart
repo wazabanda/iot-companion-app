@@ -3,6 +3,8 @@ import 'package:csc_4130_iot_application/Handlers/share_preferences/shared_prefe
 import 'package:csc_4130_iot_application/Handlers/share_preferences/shared_preferences_utils.dart';
 import 'package:http/http.dart' as http;
 
+
+// The purpose of this class is to provid a handler that will be used to interact with the api on the deployed cloud server.
 class NinjaApiService {
   static String baseUrl = 'https://iotcloudserver-production.up.railway.app';
   static String? authToken;
