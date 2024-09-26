@@ -132,6 +132,23 @@ class NinjaApiService {
       throw Exception('Failed to load location data');
     }
   }
+  static Future<List<Map<String, dynamic>>> getDevicePins(String uuid) async {
+    await _checkTokenValidity();
+    final url = Uri.parse('$baseUrl/api/core/pins/$uuid');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return List<Map<String, dynamic>>.from(json.decode(response.body));
+    } else {
+      throw Exception('Failed to load pins');
+    }
+  }
 
   static Future<void> addLocationData(String uuid, Map<String, dynamic> locationData) async {
     await _checkTokenValidity();
@@ -151,6 +168,7 @@ class NinjaApiService {
   }
 
   static Future<void> _checkTokenValidity() async {
+
     if (authToken == null || tokenExpiry == null || DateTime.now().isAfter(tokenExpiry!)) {
       String? username = await SharedPrefrencesUtils().getString(keyUsername);
       String? password = await SharedPrefrencesUtils().getString(keyPassword);
