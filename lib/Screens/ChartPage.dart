@@ -6,6 +6,8 @@ import 'package:csc_4130_iot_application/DataClasses/NumericalLogData.dart';
 import 'package:csc_4130_iot_application/Handlers/NinjaApiService.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:csc_4130_iot_application/Constants/BrandColors.dart'; // Import BrandColors
+import 'package:qr_code_scanner/qr_code_scanner.dart';
+
 
 class NumericalChartPage extends StatefulWidget {
   final String id;
@@ -25,6 +27,11 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
   Map<int, bool> buttonStates = {}; // Map to track button states
   late WebSocketChannel channel;
   TextEditingController buttonNameController = TextEditingController(); // Controller for the text input
+
+  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR'); // Key for the QR scanner
+  Barcode? result; // To store the scanned result
+  QRViewController? qrController; // Controller for QR view
+
 
   String extractBaseUrlPart(String baseUrl) {
     if (baseUrl.startsWith('https://')) {
@@ -55,7 +62,8 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
   void dispose() {
     _timer.cancel();
     channel.sink.close(); // Close WebSocket connection
-    buttonNameController.dispose(); // Dispose of controller
+    buttonNameController.dispose();
+    qrController?.dispose();// Dispose of controller
     super.dispose();
   }
 
@@ -143,7 +151,7 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
     String deviceName = widget.name;
 
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: Text(
@@ -157,13 +165,16 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
             tabs: [
               Tab(text: "Charts"),
               Tab(text: "Buttons"),
+              Tab(text: "QR Scanner"), // New QR Scanner tab
             ],
+            labelStyle: TextStyle(color: BrandColors.antiFlashWhite),
           ),
         ),
         body: TabBarView(
           children: [
             _buildChartTab(),
             _buildButtonsTab(),
+            _buildQRScannerTab(), // Add the new QR scanner tab here
           ],
         ),
       ),
@@ -272,6 +283,73 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
     );
   }
 
+  Widget _buildQRScannerTab() {
+    return Column(
+      children: <Widget>[
+        Expanded(
+          flex: 5,
+          child: QRView(
+            key: qrKey,
+            onQRViewCreated: _onQRViewCreated,
+          ),
+        ),
+        Expanded(
+          flex: 1,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Center(
+                child: (result != null)
+                    ? Text('Scanned QR Code: ${result!.code}')
+                    : Text('Scan a QR code to get its value'),
+              ),
+              const SizedBox(height: 16), // Space between text and button
+              ElevatedButton(
+                onPressed: result != null
+                    ? () {
+                  _confirmAndSendQRCode(result!.code!);
+                }
+                    : null, // Disable the button if no QR code is scanned
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: result != null ? Colors.green : Colors.grey,
+                ),
+                child: Text('Confirm & Send QR Code'),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Callback function when the QR view is created
+  void _onQRViewCreated(QRViewController controller) {
+    setState(() {
+      this.qrController = controller;
+    });
+
+    controller.scannedDataStream.listen((scanData) {
+      setState(() {
+        result = scanData; // Store the scanned result
+      });
+
+      // Optionally, you can handle the QR code immediately after scanning
+      _handleScannedQRCode(result!.code!);
+    });
+  }
+
+  // Function to handle the scanned QR code
+  void _handleScannedQRCode(String code) {
+    print("Scanned QR Code: $code");
+    // You can perform additional processing with the scanned code here
+  }
+
+  // Function to confirm and send the scanned QR code value
+  void _confirmAndSendQRCode(String code) {
+    // Implement the logic for sending the QR code value here
+    print('Sending QR Code: $code');
+    // You can call a function from your API service to handle the sending, or use other methods as needed
+  }
   Widget _buildButtonsTab() {
     return Column(
       children: [

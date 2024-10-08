@@ -167,6 +167,63 @@ class NinjaApiService {
     }
   }
 
+
+  // New API methods for inventory routes
+  static Future<List<Map<String, dynamic>>> getInventoryEntry(String uuid) async {
+    await _checkTokenValidity();
+    final url = Uri.parse('$baseUrl/api/core/inventory/entry/$uuid');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return List<Map<String, dynamic>>.from(json.decode(response.body));
+    } else {
+      throw Exception('Failed to load inventory entry');
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getInventoryLogs(String id) async {
+    await _checkTokenValidity();
+    final url = Uri.parse('$baseUrl/api/core/inventory/logs/$id');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return List<Map<String, dynamic>>.from(json.decode(response.body));
+    } else {
+      throw Exception('Failed to load inventory logs');
+    }
+  }
+
+  static Future<void> createInventoryLog(String id, Map<String, dynamic> logData) async {
+    await _checkTokenValidity();
+    final url = Uri.parse('$baseUrl/api/core/inventory/logs/$id');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $authToken',
+      },
+      body: json.encode(logData),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to create inventory log');
+    }
+  }
+
+
+
   static Future<void> _checkTokenValidity() async {
 
     if (authToken == null || tokenExpiry == null || DateTime.now().isAfter(tokenExpiry!)) {
