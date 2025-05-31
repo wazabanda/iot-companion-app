@@ -39,7 +39,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _controller.forward();
 
     // Navigate to HomeScreen after animation
-    Future.delayed(Duration(seconds: 3), () {
+    Future.delayed(Duration(seconds: 5), () {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => HomeScreen()),
       );
@@ -99,6 +99,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     style: TextStyle(
                       color: BrandColors.textSecondary,
                       fontSize: 18,
+                    ),
+                  ),
+                ),
+                Opacity(
+                  opacity: _fadeAnimation.value,
+                  child: Text(
+                    'Created by: Waza Banda',
+                    style: TextStyle(
+                      color: BrandColors.textSecondary,
+                      fontSize: 12,
                     ),
                   ),
                 ),

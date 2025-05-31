@@ -173,11 +173,20 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
       child: Scaffold(
         backgroundColor: BrandColors.background,
         appBar: AppBar(
-          title: Text(widget.name),
+          backgroundColor: BrandColors.background,
+          iconTheme: IconThemeData(color: BrandColors.textPrimary),
+          title: Text(widget.name,
+          style: TextStyle(
+            color: BrandColors.textPrimary,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+          ),
           bottom: TabBar(
             tabs: [
               Tab(text: "Charts"),
-              Tab(text: "Buttons"),
+              Tab(text: "Controls"),
+              Tab(text: "Settings"),
             ],
             labelColor: BrandColors.primary,
             unselectedLabelColor: BrandColors.textSecondary,
