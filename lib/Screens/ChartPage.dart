@@ -251,9 +251,9 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
                         color: BrandColors.textPrimary,
                       ),
                     ),
-                    SizedBox(width: 16),
+                    SizedBox(width: 8),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                       decoration: BoxDecoration(
                         border: Border.all(color: BrandColors.primary.withOpacity(0.3)),
                         borderRadius: BorderRadius.circular(12),
