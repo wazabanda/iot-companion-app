@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:csc_4130_iot_application/Handlers/share_preferences/shared_preferences_constants.dart';
 import 'package:csc_4130_iot_application/Handlers/share_preferences/shared_preferences_utils.dart';
 import 'package:csc_4130_iot_application/Constants/BrandColors.dart';
+import 'package:provider/provider.dart';
+import 'package:csc_4130_iot_application/Providers/ThemeProvider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -204,6 +206,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'Password',
                   true,
                   (value) => value?.isEmpty ?? true ? 'Please enter the password' : null,
+                ),
+                SizedBox(height: 30),
+                Text(
+                  'Appearance',
+                  style: TextStyle(
+                    color: BrandColors.primary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    color: BrandColors.cardBackground,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Consumer<ThemeProvider>(
+                    builder: (context, themeProvider, child) {
+                      return SwitchListTile(
+                        title: Text(
+                          'Dark Mode',
+                          style: TextStyle(
+                            color: BrandColors.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        subtitle: Text(
+                          themeProvider.isDarkMode ? 'Dark theme enabled' : 'Light theme enabled',
+                          style: TextStyle(
+                            color: BrandColors.textSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                        value: themeProvider.isDarkMode,
+                        onChanged: (value) async {
+                          await themeProvider.toggleTheme();
+                          // Force rebuild of the entire screen
+                          setState(() {});
+                        },
+                        activeColor: BrandColors.primary,
+                        inactiveTrackColor: BrandColors.surfaceMedium,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      );
+                    },
+                  ),
                 ),
                 SizedBox(height: 30),
                 SizedBox(

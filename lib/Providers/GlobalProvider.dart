@@ -9,9 +9,7 @@ class AppInfo with ChangeNotifier {
   List<Map<String, dynamic>> get devices => _devices;
 
   Future<void> loadDevices() async {
-    if (_devices.isNotEmpty) {
-      return;
-    }
+
 
     String? serverAddress = await SharedPrefrencesUtils().getString(keyServerAddress);
     if(serverAddress == null)

@@ -46,6 +46,8 @@ class NinjaApiService {
 
   static Future<List<dynamic>> listDevices() async {
     await _checkTokenValidity();
+    print(authToken);
+    print("Fetching devices");
     final url = Uri.parse('$baseUrl/api/core/devices');
     final response = await http.get(
       url,

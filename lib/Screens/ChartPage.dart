@@ -49,10 +49,25 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
     fetchAndAppendLogs();
     fetchButtons();
     String baseUrl = NinjaApiService.baseUrl;
-
+    String wsUrl = 'ws://' + extractBaseUrlPart(baseUrl) + "/ws/devices/" + widget.id;
+    
+    print('Connecting to WebSocket: $wsUrl');
+    
     // Initialize WebSocket
-    channel = WebSocketChannel.connect(
-      Uri.parse('ws://' + extractBaseUrlPart(baseUrl) + "/ws/devices/" + widget.id),
+    channel = WebSocketChannel.connect(Uri.parse(wsUrl));
+    
+    // Listen for WebSocket messages
+    channel.stream.listen(
+      (message) {
+        print('WebSocket received: $message');
+        // Handle incoming messages if needed
+      },
+      onError: (error) {
+        print('WebSocket error: $error');
+      },
+      onDone: () {
+        print('WebSocket connection closed');
+      },
     );
 
     _startTimer(_selectedInterval);
@@ -61,7 +76,8 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
   @override
   void dispose() {
     _timer.cancel();
-    channel.sink.close(); // Close WebSocket connection
+    print('Closing WebSocket connection');
+    channel.sink.close();
     buttonNameController.dispose();
     // qrController?.dispose();// Dispose of controller
     super.dispose();
@@ -125,9 +141,13 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
     };
 
     // Send WebSocket message
-    channel.sink.add(jsonEncode(message)); // Convert map to JSON string
-
-    print("Toggling pin: $pin, State: ${buttonStates[pin]}");
+    print('Sending WebSocket message: ${jsonEncode(message)}');
+    try {
+      channel.sink.add(jsonEncode(message));
+      print('Successfully sent pin toggle message for pin: $pin, new state: ${buttonStates[pin]}');
+    } catch (e) {
+      print('Failed to send WebSocket message: $e');
+    }
   }
 
   // Function to toggle pin based on button name
@@ -148,33 +168,26 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
 
   @override
   Widget build(BuildContext context) {
-    String deviceName = widget.name;
-
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Scaffold(
+        backgroundColor: BrandColors.background,
         appBar: AppBar(
-          title: Text(
-            deviceName,
-            style: TextStyle(
-              color: BrandColors.white,
-            ),
-          ),
-          backgroundColor: BrandColors.oxfordBlue,
+          title: Text(widget.name),
           bottom: TabBar(
             tabs: [
               Tab(text: "Charts"),
               Tab(text: "Buttons"),
-              // Tab(text: "QR Scanner"), // New QR Scanner tab
             ],
-            labelStyle: TextStyle(color: BrandColors.antiFlashWhite),
+            labelColor: BrandColors.primary,
+            unselectedLabelColor: BrandColors.textSecondary,
+            indicatorColor: BrandColors.primary,
           ),
         ),
         body: TabBarView(
           children: [
             _buildChartTab(),
             _buildButtonsTab(),
-            // _buildQRScannerTab(), // Add the new QR scanner tab here
           ],
         ),
       ),
@@ -186,98 +199,225 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-            child: Row(
+          // Update Interval Selector
+          Container(
+            margin: EdgeInsets.fromLTRB(24, 24, 24, 16),
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: BrandColors.cardBackground,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Update Interval: ",
+                  "Chart Settings",
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: BrandColors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: BrandColors.textPrimary,
                   ),
                 ),
-                SizedBox(width: 16),
-                DropdownButton<int>(
-                  value: _selectedInterval,
-                  items: [5, 10, 30, 60, 120, 300].map((int value) {
-                    return DropdownMenuItem<int>(
-                      value: value,
-                      child: Text(
-                        '$value seconds',
-                        style: TextStyle(color: BrandColors.white),
+                SizedBox(height: 16),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.update,
+                      color: BrandColors.primary,
+                      size: 20,
+                    ),
+                    SizedBox(width: 12),
+                    Text(
+                      "Update Interval:",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: BrandColors.textPrimary,
                       ),
-                    );
-                  }).toList(),
-                  onChanged: (int? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedInterval = newValue;
-                        _startTimer(_selectedInterval);
-                      });
-                    }
-                  },
+                    ),
+                    SizedBox(width: 16),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: BrandColors.primary.withOpacity(0.3)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: DropdownButton<int>(
+                        value: _selectedInterval,
+                        underline: SizedBox(),
+                        icon: Icon(Icons.arrow_drop_down, color: BrandColors.primary),
+                        items: [5, 10, 30, 60, 120, 300].map((int value) {
+                          return DropdownMenuItem<int>(
+                            value: value,
+                            child: Text(
+                              '$value seconds',
+                              style: TextStyle(
+                                color: BrandColors.textPrimary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (int? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              _selectedInterval = newValue;
+                              _startTimer(_selectedInterval);
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
+
+          // Charts
           ...data.entries.map((entry) {
             final heading = entry.key;
             final chartData = entry.value;
-            final latestValue = chartData.isNotEmpty ? chartData.last.sales : 'No Data';
+            final latestValue = chartData.isNotEmpty ? chartData.last.sales.toStringAsFixed(2) : 'No Data';
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                  child: Text(
-                    heading,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: BrandColors.white,
+            return Container(
+              margin: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+              decoration: BoxDecoration(
+                color: BrandColors.cardBackground,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              heading,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: BrandColors.textPrimary,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Real-time data',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: BrandColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: BrandColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.show_chart,
+                                size: 18,
+                                color: BrandColors.primary,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Latest: $latestValue',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: BrandColors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                SizedBox(
-                  height: 300,
-                  child: SfCartesianChart(
-                    primaryXAxis: CategoryAxis(
-                      labelStyle: TextStyle(color: BrandColors.white),
+                  Container(
+                    height: 300,
+                    padding: EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      bottom: 20,
                     ),
-                    primaryYAxis: NumericAxis(
-                      labelStyle: TextStyle(color: BrandColors.white),
-                    ),
-                    title: ChartTitle(
-                      text: 'Latest value: $latestValue',
-                      textStyle: TextStyle(color: BrandColors.white),
-                    ),
-                    legend: Legend(
-                      isVisible: true,
-                      textStyle: TextStyle(color: BrandColors.white),
-                    ),
-                    tooltipBehavior: TooltipBehavior(enable: true),
-                    series: <CartesianSeries<NumericalLogData, String>>[
-                      LineSeries<NumericalLogData, String>(
-                        dataSource: chartData,
-                        xValueMapper: (NumericalLogData logData, _) => logData.time,
-                        yValueMapper: (NumericalLogData logData, _) => logData.sales,
-                        name: heading,
-                        color: BrandColors.carrotOrange,
-                        dataLabelSettings: DataLabelSettings(
-                          isVisible: true,
-                          textStyle: TextStyle(color: BrandColors.white),
+                    child: SfCartesianChart(
+                      margin: EdgeInsets.zero,
+                      primaryXAxis: CategoryAxis(
+                        labelStyle: TextStyle(color: BrandColors.textPrimary),
+                        axisLine: AxisLine(color: BrandColors.textSecondary.withOpacity(0.3)),
+                        majorGridLines: MajorGridLines(
+                          color: BrandColors.textSecondary.withOpacity(0.1),
+                          width: 1,
                         ),
                       ),
-                    ],
+                      primaryYAxis: NumericAxis(
+                        labelStyle: TextStyle(color: BrandColors.textPrimary),
+                        axisLine: AxisLine(color: BrandColors.textSecondary.withOpacity(0.3)),
+                        majorGridLines: MajorGridLines(
+                          color: BrandColors.textSecondary.withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      plotAreaBorderColor: Colors.transparent,
+                      legend: Legend(
+                        isVisible: false,
+                      ),
+                      tooltipBehavior: TooltipBehavior(
+                        enable: true,
+                        color: BrandColors.primary,
+                        textStyle: TextStyle(color: BrandColors.white),
+                      ),
+                      series: <CartesianSeries<NumericalLogData, String>>[
+                        LineSeries<NumericalLogData, String>(
+                          dataSource: chartData,
+                          xValueMapper: (NumericalLogData logData, _) => logData.time,
+                          yValueMapper: (NumericalLogData logData, _) => logData.sales,
+                          name: heading,
+                          color: BrandColors.primary,
+                          width: 2.5,
+                          markerSettings: MarkerSettings(
+                            isVisible: true,
+                            height: 8,
+                            width: 8,
+                            shape: DataMarkerType.circle,
+                            borderWidth: 2,
+                            color: BrandColors.primary,
+                            borderColor: BrandColors.cardBackground,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                ],
+              ),
             );
           }).toList(),
+          SizedBox(height: 24), // Bottom padding
         ],
       ),
     );
@@ -352,64 +492,138 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
   }
   */
   Widget _buildButtonsTab() {
-    return Column(
-      children: [
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: buttons.isEmpty
-                ? Center(
-              child: Text(
-                "No buttons available",
-                style: TextStyle(color: BrandColors.white),
-              ),
-            )
-                : GridView.builder(
-              itemCount: buttons.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 2, // Control button size
-              ),
-              itemBuilder: (context, index) {
-                final button = buttons[index];
-                final pin = button['pin'];
+    return Container(
+      color: BrandColors.background,
+      child: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: buttons.isEmpty
+                  ? Center(
+                      child: Text(
+                        "No buttons available",
+                        style: TextStyle(color: BrandColors.textSecondary),
+                      ),
+                    )
+                  : GridView.builder(
+                      itemCount: buttons.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                        childAspectRatio: 1.2,
+                      ),
+                      itemBuilder: (context, index) {
+                        final button = buttons[index];
+                        final pin = button['pin'];
+                        final isActive = buttonStates[pin]!;
 
-                return ElevatedButton(
-                  onPressed: () {
-                    togglePin(pin);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                    buttonStates[pin]! ? Colors.green : Colors.red,
-                    textStyle: TextStyle(color: BrandColors.white),
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: BrandColors.cardBackground,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => togglePin(pin),
+                              borderRadius: BorderRadius.circular(16),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: isActive 
+                                            ? BrandColors.secondary.withOpacity(0.1)
+                                            : BrandColors.primary.withOpacity(0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        isActive ? Icons.power_settings_new : Icons.power_off,
+                                        color: isActive 
+                                            ? BrandColors.secondary
+                                            : BrandColors.primary,
+                                        size: 28,
+                                      ),
+                                    ),
+                                    SizedBox(height: 12),
+                                    Text(
+                                      button['name'],
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: BrandColors.textPrimary,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(height: 6),
+                                    Text(
+                                      isActive ? 'ON' : 'OFF',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: isActive 
+                                            ? BrandColors.secondary
+                                            : BrandColors.textSecondary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: BrandColors.cardBackground,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
                   ),
-                  child: Text(button['name']),
-                );
-              },
+                ],
+              ),
+              child: TextField(
+                controller: buttonNameController,
+                decoration: InputDecoration(
+                  labelText: 'Enter button name to toggle',
+                  prefixIcon: Icon(Icons.search, color: BrandColors.primary),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: BrandColors.cardBackground,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                ),
+                onSubmitted: (value) {
+                  togglePinByName(value);
+                  buttonNameController.clear();
+                },
+              ),
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: TextField(
-            controller: buttonNameController,
-            decoration: InputDecoration(
-              labelText: 'Enter button name to toggle',
-              labelStyle: TextStyle(color: BrandColors.white),
-              border: OutlineInputBorder(),
-              filled: true,
-              fillColor: BrandColors.oxfordBlue,
-            ),
-            style: TextStyle(color: BrandColors.antiFlashWhite),
-            onSubmitted: (value) {
-              togglePinByName(value);
-              buttonNameController.clear(); // Clear input after submission
-            },
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
