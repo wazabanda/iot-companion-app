@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/usr/bin/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/wazab/Android/SDK/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/home/wazab/Dev/Github/iot-companion-app/android/app/.cxx/Debug/3j3g5t2o/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/wazab/Android/SDK/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/home/wazab/Dev/Github/iot-companion-app/android/app/.cxx/Debug/3j3g5t2o/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

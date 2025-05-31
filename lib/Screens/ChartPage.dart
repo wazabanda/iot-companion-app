@@ -6,7 +6,7 @@ import 'package:csc_4130_iot_application/DataClasses/NumericalLogData.dart';
 import 'package:csc_4130_iot_application/Handlers/NinjaApiService.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:csc_4130_iot_application/Constants/BrandColors.dart'; // Import BrandColors
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+// import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 
 class NumericalChartPage extends StatefulWidget {
@@ -28,9 +28,9 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
   late WebSocketChannel channel;
   TextEditingController buttonNameController = TextEditingController(); // Controller for the text input
 
-  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR'); // Key for the QR scanner
-  Barcode? result; // To store the scanned result
-  QRViewController? qrController; // Controller for QR view
+  // final GlobalKey qrKey = GlobalKey(debugLabel: 'QR'); // Key for the QR scanner
+  // Barcode? result; // To store the scanned result
+  // QRViewController? qrController; // Controller for QR view
 
 
   String extractBaseUrlPart(String baseUrl) {
@@ -63,7 +63,7 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
     _timer.cancel();
     channel.sink.close(); // Close WebSocket connection
     buttonNameController.dispose();
-    qrController?.dispose();// Dispose of controller
+    // qrController?.dispose();// Dispose of controller
     super.dispose();
   }
 
@@ -165,7 +165,7 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
             tabs: [
               Tab(text: "Charts"),
               Tab(text: "Buttons"),
-              Tab(text: "QR Scanner"), // New QR Scanner tab
+              // Tab(text: "QR Scanner"), // New QR Scanner tab
             ],
             labelStyle: TextStyle(color: BrandColors.antiFlashWhite),
           ),
@@ -174,7 +174,7 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
           children: [
             _buildChartTab(),
             _buildButtonsTab(),
-            _buildQRScannerTab(), // Add the new QR scanner tab here
+            // _buildQRScannerTab(), // Add the new QR scanner tab here
           ],
         ),
       ),
@@ -283,7 +283,7 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
     );
   }
 
-  Widget _buildQRScannerTab() {
+  /*Widget _buildQRScannerTab() {
     return Column(
       children: <Widget>[
         Expanded(
@@ -320,11 +320,11 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
         ),
       ],
     );
-  }
-
+  }*/
+/*
   // Callback function when the QR view is created
-  void _onQRViewCreated(QRViewController controller) {
-    setState(() {
+  // void _onQRViewCreated(QRViewController controller) {
+  //   setState(() {
       this.qrController = controller;
     });
 
@@ -350,6 +350,7 @@ class _NumericalChartPageState extends State<NumericalChartPage> {
     print('Sending QR Code: $code');
     // You can call a function from your API service to handle the sending, or use other methods as needed
   }
+  */
   Widget _buildButtonsTab() {
     return Column(
       children: [

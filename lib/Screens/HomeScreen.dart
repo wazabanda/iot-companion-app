@@ -26,77 +26,106 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final deviceProvider = Provider.of<AppInfo>(context);
     return Scaffold(
+      backgroundColor: BrandColors.background,
       appBar: AppBar(
+        elevation: 0,
         title: Text(
           'Your Devices',
           style: TextStyle(
-            color: BrandColors.white,  // Use brand color for text
+            color: BrandColors.textPrimary,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: BrandColors.oxfordBlue, // Set app bar color
+        backgroundColor: BrandColors.cardBackground,
       ),
       body: deviceProvider.devices.isEmpty
-          ? Center(child: CircularProgressIndicator())
+          ? Center(
+              child: CircularProgressIndicator(
+                color: BrandColors.primary,
+              ),
+            )
           : GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.8,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-        ),
-        padding: EdgeInsets.all(16),
-        itemCount: deviceProvider.devices.length,
-        itemBuilder: (context, index) {
-          final cardData = deviceProvider.devices[index];
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NumericalChartPage(
-                    id: cardData['device_id'],
-                    name: cardData['id'],
-                  ),
-                ),
-              );
-            },
-            child: Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12), // Use a consistent border radius
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.85,
+                mainAxisSpacing: 20,
+                crossAxisSpacing: 20,
               ),
-              color: BrandColors.carrotOrange,  // Set card background color
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(12), // Match card border radius
+              padding: EdgeInsets.all(20),
+              itemCount: deviceProvider.devices.length,
+              itemBuilder: (context, index) {
+                final cardData = deviceProvider.devices[index];
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NumericalChartPage(
+                          id: cardData['device_id'],
+                          name: cardData['id'],
+                        ),
                       ),
-                      child: Image.asset(
-                        cardData['image'],
-                        fit: BoxFit.cover,
-                      ),
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: BrandColors.cardBackground,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(20),
+                            ),
+                            child: Image.asset(
+                              cardData['image'],
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: BrandColors.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.vertical(
+                                bottom: Radius.circular(20),
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  cardData['title'],
+                                  style: TextStyle(
+                                    color: BrandColors.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Text(
-                      cardData['title'],
-                      style: TextStyle(
-                        color: BrandColors.white,  // Use brand color for text
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

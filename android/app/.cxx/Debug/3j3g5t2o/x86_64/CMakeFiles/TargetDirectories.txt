@@ -1,0 +1,2 @@
+/home/wazab/Dev/Github/iot-companion-app/android/app/.cxx/Debug/3j3g5t2o/x86_64/CMakeFiles/edit_cache.dir
+/home/wazab/Dev/Github/iot-companion-app/android/app/.cxx/Debug/3j3g5t2o/x86_64/CMakeFiles/rebuild_cache.dir

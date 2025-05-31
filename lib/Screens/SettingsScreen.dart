@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:csc_4130_iot_application/Handlers/share_preferences/shared_preferences_constants.dart';
 import 'package:csc_4130_iot_application/Handlers/share_preferences/shared_preferences_utils.dart';
+import 'package:csc_4130_iot_application/Constants/BrandColors.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -96,73 +97,138 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Widget _buildInputField(
+    TextEditingController controller,
+    String label,
+    bool isPassword,
+    String? Function(String?) validator,
+  ) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: BrandColors.cardBackground,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        obscureText: isPassword,
+        style: TextStyle(color: BrandColors.textPrimary),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: BrandColors.textSecondary),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: BrandColors.primary.withOpacity(0.3)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: BrandColors.primary.withOpacity(0.3)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: BrandColors.primary),
+          ),
+          filled: true,
+          fillColor: BrandColors.cardBackground,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        ),
+        validator: validator,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: BrandColors.background,
       appBar: AppBar(
-        title: const Text('Settings'),
+        elevation: 0,
+        backgroundColor: BrandColors.cardBackground,
+        title: Text(
+          'Settings',
+          style: TextStyle(
+            color: BrandColors.textPrimary,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // TextFormField for Server IP
-              TextFormField(
-                controller: _serverIpController,
-                decoration: const InputDecoration(
-                  labelText: 'Server IP',
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Server Configuration',
+                  style: TextStyle(
+                    color: BrandColors.primary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                keyboardType: TextInputType.text,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the server IP';
-                  }
-                  // Add additional validation if needed
-                  return null;
-                },
-              ),
-              const SizedBox(height: 40),
-              Text("Server Credentials"),
-              const SizedBox(height: 20,),
-              // TextFormField for Username
-              TextFormField(
-                controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Username',
+                SizedBox(height: 20),
+                _buildInputField(
+                  _serverIpController,
+                  'Server IP',
+                  false,
+                  (value) => value?.isEmpty ?? true ? 'Please enter the server IP' : null,
                 ),
-                keyboardType: TextInputType.text,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the username';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              // TextFormField for Password
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
+                SizedBox(height: 30),
+                Text(
+                  'Server Credentials',
+                  style: TextStyle(
+                    color: BrandColors.primary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                obscureText: true, // To obscure the text for passwords
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the password';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              // Submit Button
-              ElevatedButton(
-                onPressed: _submitForm,
-                child: const Text('Save'),
-              ),
-            ],
+                SizedBox(height: 20),
+                _buildInputField(
+                  _usernameController,
+                  'Username',
+                  false,
+                  (value) => value?.isEmpty ?? true ? 'Please enter the username' : null,
+                ),
+                _buildInputField(
+                  _passwordController,
+                  'Password',
+                  true,
+                  (value) => value?.isEmpty ?? true ? 'Please enter the password' : null,
+                ),
+                SizedBox(height: 30),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _submitForm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: BrandColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Save Settings',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: BrandColors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
